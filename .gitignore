@@ -188,4 +188,8 @@ psd
 thumb
 sketch
 
+datasets/
+static/
+backend/faiss_index/
+
 # End of https://www.toptal.com/developers/gitignore/api/python,react
