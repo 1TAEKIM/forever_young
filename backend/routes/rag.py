@@ -79,7 +79,7 @@ async def recommend_jobs(request: RecommendationRequest):
             content_lines = content.splitlines(keepends=True)
             
             if content_lines[0].startswith("채용제목"):
-                title = content_lines[0].removeprefix("채용제목: ")
+                title = content_lines[0].removeprefix("채용제목: ").strip()
                 description = "".join(content_lines[1:])
             else:
                 title = "제목 없음"
