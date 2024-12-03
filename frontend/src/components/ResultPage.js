@@ -187,7 +187,7 @@ const ResultPage = ({ recommendations, summary }) => {
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleGenerateQuestions(job.description)}
+                    onClick={() => handleGenerateQuestions(`채용제목: ${job.title}\n${job.description}`)}
                     disabled={loading}
                     sx={{
                       width: "140px",
