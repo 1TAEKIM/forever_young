@@ -124,3 +124,5 @@ async def update_resume(
 
     db.commit()
     return {"message": "Resume updated successfully"}
+
+

@@ -99,48 +99,47 @@ async def recommend_jobs(request: RecommendationRequest):
         print("Request received:", request)
 
         # 검색기 생성
-        try:
-            retriever = vector_store.as_retriever(
-                search_kwargs={
-                    "k": 5,  # 반환할 최대 결과 수
-                    "fetch_k": 50,
-                }
-            )
-            print("Retriever created successfully.")
-        except Exception as e:
-            print(f"Error creating retriever: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Error creating retriever: {str(e)}")
+        retriever = vector_store.as_retriever(
+            search_kwargs={
+                "k": 5,
+                "fetch_k": 50,
+            }
+        )
+        print("Retriever created successfully.")
 
         # RAG Chain 생성
-        try:
-            rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-            print("RAG chain created successfully.")
-        except Exception as e:
-            print(f"Error creating RAG chain: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Error creating RAG chain: {str(e)}")
+        rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+        print("RAG chain created successfully.")
 
-        # 검색 실행
-        try:
-            print("Attempting to retrieve relevant documents...")
-            print("Search query (profile):", request.profile)
-            docs = await retriever.invoke(request.profile)
-            if not docs:
-                print("No documents retrieved.")
-                return {"recommendations": "No relevant job openings found."}
-            print("Retrieved documents:", docs)
-        except Exception as e:
-            print(f"Error during document retrieval: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Error during document retrieval: {str(e)}")
+        # 검색 결과 확인
+        print("Attempting to retrieve relevant documents...")
+        docs = retriever.get_relevant_documents(request.profile)  # 동기 호출로 수정
+        if not docs:
+            print("No documents retrieved.")
+            return {"recommendations": []}
+        print(f"Retrieved {len(docs)} documents.")
+        print("Document contents:", docs)
 
         # RAG 실행
-        try:
-            print("Attempting to run RAG chain...")
-            response = await rag_chain.ainvoke({"input": request.profile})
-            print("RAG response generated:", response)
-            return {"recommendations": response["answer"]}
-        except Exception as e:
-            print(f"Error during RAG chain invocation: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Error during RAG chain invocation: {str(e)}")
+        response = await rag_chain.ainvoke({"input": request.profile})
+        print("RAG response generated:", response)
+
+        # 결과 변환
+        formatted_recommendations = []
+        for doc in docs:
+            metadata = doc.metadata
+            content = doc.page_content
+
+            # 제목과 설명으로 변환
+            recommendation = {
+                "title": metadata.get("title", "Job Title Missing"),
+                "description": content,
+            }
+            formatted_recommendations.append(recommendation)
+
+        print("Formatted recommendations:", formatted_recommendations)
+
+        return {"recommendations": formatted_recommendations}
     except Exception as e:
-        print(f"Unexpected error in recommend_jobs: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        print("Error during document retrieval:", str(e))
+        raise HTTPException(status_code=500, detail=f"RAG processing failed: {str(e)}")
