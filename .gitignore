@@ -191,5 +191,6 @@ sketch
 datasets/
 static/
 backend/faiss_index/
+backend/models/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,react
