@@ -3,9 +3,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.auth import router as auth_router
 from backend.routes.resume import router as resume_router
-from backend.routes.analysis import router as analysis_router
+from backend.routes.conf_analysis import router as analysis_router
 from backend.routes.rag import router as rag_router
 from backend.routes.tts import router as tts_router
+from backend.routes.conf_analysis import router as conf_router
 
 # FastAPI 앱 초기화
 app = FastAPI()
@@ -13,7 +14,7 @@ app = FastAPI()
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React 앱의 도메인
+    allow_origins=["*"],  # React 앱의 도메인
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,6 +26,7 @@ app.include_router(resume_router, prefix="/resume", tags=["Resume"])
 app.include_router(analysis_router, prefix="/analysis", tags=["Analysis"])
 app.include_router(rag_router, prefix="/rag", tags=["RAG"])
 app.include_router(tts_router, prefix="/tts", tags=["TTS"])
+app.include_router(conf_router, prefix="/conf", tags=['CONF'])
 
 # 기본 라우트
 @app.get("/", tags=["Home"])
