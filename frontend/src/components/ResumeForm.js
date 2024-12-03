@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,9 +8,11 @@ import {
   Typography,
   Grid,
   Paper,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 
-const ResumeForm = ({ isLoggedIn, userId }) => {
+const ResumeForm = ({ isLoggedIn, onResult }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     age: "",
@@ -21,77 +23,73 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
     skills: "",
     desired_position: "",
     desired_location: "",
-    resume_pdf: null,
-    resume_word: null,
   });
-
-  // Fetch existing data for logged-in users
-  useEffect(() => {
-    if (isLoggedIn && userId) {
-      axios
-        .get(`http://localhost:8000/resume/${userId}`)
-        .then((response) => {
-          setFormData(response.data);
-        })
-        .catch((error) => {
-          console.error("Failed to fetch resume data:", error);
-        });
-    }
-  }, [isLoggedIn, userId]);
+  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    if (files && files.length > 0) {
-      setFormData({ ...formData, [name]: files[0] });
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = new FormData();
 
-    Object.keys(formData).forEach((key) => {
-      if (formData[key]) {
-        form.append(key, formData[key]);
-      }
-    });
-
+    setLoading(true); // 로딩 시작
     try {
-      if (isLoggedIn && userId) {
-        // Update resume for logged-in user
-        await axios.put(`http://localhost:8000/resume/${userId}`, form, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        alert("Resume updated successfully!");
-      } else {
-        // Save new resume
-        await axios.post("http://localhost:8000/resume", form, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        alert("Resume submitted successfully!");
+      // 폼 데이터를 RAG 입력값으로 변환
+      const ragInput = `
+        나이: ${formData.age}
+        연락처: ${formData.contact}
+        경력: ${formData.experience}
+        학력: ${formData.education}
+        자격증: ${formData.certifications}
+        기술: ${formData.skills}
+        희망 직무: ${formData.desired_position}
+        희망 지역: ${formData.desired_location}
+      `;
+
+      // RAG API 호출
+      const recommendResponse = await axios.post("http://localhost:8000/rag/recommend", {
+        profile: ragInput,
+      });
+      const recommendedJobs = recommendResponse.data.recommendations;
+
+      if (!Array.isArray(recommendedJobs)) {
+        throw new Error("Invalid recommendations format.");
       }
-      navigate("/");
-    } catch (error) {
-      console.error("Failed to submit resume:", error);
-      alert("Failed to submit resume. Please try again.");
+
+      // 결과 페이지로 데이터 전달
+      onResult(recommendedJobs, ragInput); // 요약 대신 입력 데이터를 전달
+      navigate("/results");
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || "An error occurred.");
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
 
   return (
     <Paper elevation={3} sx={{ padding: 4, maxWidth: 600, margin: "auto" }}>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+        <Typography sx={{ marginLeft: 2 }}>처리 중입니다. 잠시만 기다려주세요...</Typography>
+      </Backdrop>
       <Typography variant="h4" gutterBottom>
-        Resume Form
+        이력서 작성
       </Typography>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
-              label="Age"
+              label="나이"
               name="age"
               type="number"
               fullWidth
@@ -101,7 +99,7 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Contact"
+              label="연락처"
               name="contact"
               fullWidth
               onChange={handleChange}
@@ -110,7 +108,7 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Experience"
+              label="경력"
               name="experience"
               fullWidth
               multiline
@@ -121,7 +119,7 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Education"
+              label="학력"
               name="education"
               fullWidth
               multiline
@@ -132,7 +130,7 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Certifications"
+              label="자격증"
               name="certifications"
               fullWidth
               multiline
@@ -143,7 +141,7 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Skills"
+              label="기술"
               name="skills"
               fullWidth
               multiline
@@ -154,7 +152,7 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
           </Grid>
           <Grid item xs={6}>
             <TextField
-              label="Desired Position"
+              label="희망 직무"
               name="desired_position"
               fullWidth
               onChange={handleChange}
@@ -163,43 +161,25 @@ const ResumeForm = ({ isLoggedIn, userId }) => {
           </Grid>
           <Grid item xs={6}>
             <TextField
-              label="Desired Location"
+              label="희망 지역"
               name="desired_location"
               fullWidth
               onChange={handleChange}
               value={formData.desired_location}
             />
           </Grid>
-          <Grid item xs={6}>
-            <Typography>Resume (PDF)</Typography>
-            <input
-              type="file"
-              name="resume_pdf"
-              accept=".pdf"
-              onChange={handleFileChange}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <Typography>Resume (Word)</Typography>
-            <input
-              type="file"
-              name="resume_word"
-              accept=".doc,.docx"
-              onChange={handleFileChange}
-            />
-          </Grid>
           <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-            >
-              Submit Resume
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              이력서 제출
             </Button>
           </Grid>
         </Grid>
       </Box>
+      {error && (
+        <Typography color="error" variant="body1" sx={{ marginTop: 2 }}>
+          {error}
+        </Typography>
+      )}
     </Paper>
   );
 };

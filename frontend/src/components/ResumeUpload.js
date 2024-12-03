@@ -6,15 +6,17 @@ import {
   Grid,
   Box,
   Paper,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const ResumeUpload = ({ onResult }) => {
-  const navigate = useNavigate(); // 결과 페이지 이동에 사용
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
-  const [summary, setSummary] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -31,27 +33,28 @@ const ResumeUpload = ({ onResult }) => {
     const formData = new FormData();
     formData.append("file", file);
 
+    setLoading(true);
+
     try {
-      // 1. 파일 업로드 및 요약
       const uploadResponse = await axios.post("http://localhost:8000/resume/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const summaryData = uploadResponse.data.summary; // 요약 내용
-      setSummary(summaryData);
+      const summaryData = uploadResponse.data.summary;
 
-      // 2. 추천 요청
       const recommendResponse = await axios.post("http://localhost:8000/rag/recommend", {
         profile: summaryData,
       });
 
       const recommendedJobs = recommendResponse.data.recommendations;
 
-      // 3. 결과 페이지로 이동
-      onResult(recommendedJobs); // 상위 컴포넌트로 결과 전달
+      // summaryData와 recommendedJobs를 함께 전달
+      onResult(recommendedJobs, summaryData);
       navigate("/results");
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred during file upload.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,6 +69,16 @@ const ResumeUpload = ({ onResult }) => {
         marginTop: "30px",
       }}
     >
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+        <Typography sx={{ marginLeft: 2 }}>처리 중입니다. 잠시만 기다려주세요...</Typography>
+      </Backdrop>
       <Paper elevation={3} sx={{ padding: 4 }}>
         <Typography variant="h4" gutterBottom>
           이력서 업로드 및 추천받기
@@ -106,16 +119,6 @@ const ResumeUpload = ({ onResult }) => {
             </Grid>
           </Grid>
         </Box>
-        {summary && (
-          <Box sx={{ marginTop: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              요약 결과:
-            </Typography>
-            <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
-              {summary}
-            </Typography>
-          </Box>
-        )}
       </Paper>
     </Container>
   );
