@@ -9,13 +9,18 @@ import ResultPage from "./components/ResultPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [recommendations, setRecommendations] = useState([]); // 추천 결과 상태 추가
+  const [recommendations, setRecommendations] = useState([]); // 추천 결과 상태
+  const [summary, setSummary] = useState(""); // 이력서 요약 상태
 
-  // 로그인 상태 확인
   useEffect(() => {
     const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user); // 유저 데이터가 존재하면 로그인 상태로 설정
+    setIsLoggedIn(!!user);
   }, []);
+
+  const handleResults = (recommendedJobs, summaryData) => {
+    setRecommendations(recommendedJobs);
+    setSummary(summaryData); // summary 상태 업데이트
+  };
 
   return (
     <Router>
@@ -26,31 +31,25 @@ function App() {
         />
         <Route
           path="/register"
-          element={
-            isLoggedIn ? <Navigate to="/" replace /> : <Register />
-          }
+          element={isLoggedIn ? <Navigate to="/" replace /> : <Register />}
         />
         <Route
           path="/login"
-          element={
-            isLoggedIn ? <Navigate to="/" replace /> : <Login setIsLoggedIn={setIsLoggedIn} />
-          }
+          element={isLoggedIn ? <Navigate to="/" replace /> : <Login setIsLoggedIn={setIsLoggedIn} />}
         />
         <Route
           path="/resume"
-          element={<ResumeForm isLoggedIn={isLoggedIn} />}
+          element={<ResumeForm isLoggedIn={isLoggedIn} onResult={handleResults} />} // onResult 전달
         />
         <Route
           path="/resume/upload"
           element={
-            <ResumeUpload
-              onResult={setRecommendations} // 결과를 업데이트하는 콜백 전달
-            />
+            <ResumeUpload onResult={handleResults} /> // handleResults 전달
           }
         />
-        <Route 
-          path="/results" 
-          element={<ResultPage recommendations={recommendations} />} 
+        <Route
+          path="/results"
+          element={<ResultPage recommendations={recommendations} summary={summary} />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
