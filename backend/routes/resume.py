@@ -1,17 +1,31 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from fastapi.responses import JSONResponse
 from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader
-from langchain_community.llms import OpenAI
-from langchain.chains.summarize import load_summarize_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts import PromptTemplate
 import os
 import tempfile
-from dotenv import load_dotenv
+from sqlalchemy.orm import Session
+from ..database import SessionLocal
+from ..models import User
+from typing import Optional
+from .. import llm
+
 
 router = APIRouter()
 
-# 환경 변수 로드
-load_dotenv()
+
+# prompt_template = (
+#     "Summarize the following content in one sentence. "
+#     "The summary must be in Korean.\n\n"
+#     "{context}"
+# )
+prompt_template = (
+    "다음 내용을 한 문장으로 요약하세요:\n\n"
+    "{context}"
+)
+prompt = PromptTemplate.from_template(prompt_template)
+chain = create_stuff_documents_chain(llm, prompt=prompt)
 
 
 @router.post("/upload")
@@ -33,17 +47,7 @@ async def upload_resume(file: UploadFile = File(...)):
     documents = loader.load()
     os.remove(tmp_file_name)
 
-    # Summarize the document
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    llm = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
-
-    prompt_template = """
-    다음 내용을 한 문장으로 요약하세요:
-    {text}
-    요약:"""
-    PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
-    chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
-    summary = chain.run(documents)
+    summary = chain.invoke({"context": documents}).removesuffix("<end_of_turn>").strip()
 
     return {"summary": summary}
 
@@ -51,14 +55,6 @@ async def upload_resume(file: UploadFile = File(...)):
 ########################################################################
 
 # 이력서 작성 코드
-
-from fastapi import APIRouter, HTTPException, Form, UploadFile, File
-from sqlalchemy.orm import Session
-from ..database import SessionLocal
-from ..models import User
-from typing import Optional
-
-# router = APIRouter()
 
 @router.get("/resume/{user_id}")
 async def get_resume(user_id: str):

@@ -1,12 +1,25 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, FileResponse
 from gtts import gTTS
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-from langchain.llms import OpenAI
 import os
+from .. import llm
+import re
 
 router = APIRouter()
+
+
+# prompt_template = (
+#     "Use the following pieces of a job description to make a list of three possible job interview questions. "
+#     "Each question must be in one sentence without any remarks. "
+#     "Your response must be in Korean.\n\n"
+#     "{job_description}"
+# )
+prompt_template = (
+    "다음 채용공고를 기반으로 구직자의 역량을 평가할 수 있는 면접 질문 3개를 한국어로 생성하세요:\n\n"
+    "{job_description}"
+)
+prompt = PromptTemplate.from_template(prompt_template)
 
 # 면접 질문 저장
 generated_questions = []
@@ -23,29 +36,10 @@ async def generate_questions_for_job(request: Request):
         if not job_description:
             return JSONResponse(content={"error": "Job description is required."}, status_code=400)
 
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-        if not openai_api_key:
-            return JSONResponse(content={"error": "API 키가 설정되지 않았습니다."}, status_code=500)
-
-        llm = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
-
-        prompt_template = PromptTemplate(
-            input_variables=["job_description"],
-            template="""
-            다음 채용공고를 기반으로 구직자의 역량을 평가할 수 있는 면접 질문 3개를 한국어로 생성하세요:
-            
-            채용공고:
-            {job_description}
-
-            면접 질문:
-            """
-        )
-
-        chain = LLMChain(llm=llm, prompt=prompt_template)
-        questions = chain.run({"job_description": job_description}).split("\n")
+        questions = llm.invoke(prompt.invoke({"job_description": job_description})).content.replace("**", "")
 
         # 전역 리스트에 저장
-        generated_questions = [q.strip("- ") for q in questions if q.strip()]
+        generated_questions = [q.strip() for q in re.findall(r"^(?:-|\d\.) (.*)$", questions, flags=re.MULTILINE)]
 
         return {"questions": generated_questions}
 
@@ -96,9 +90,6 @@ async def tts_page(question_index: int):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-
-
-from fastapi.responses import FileResponse
 
 @router.get("/static/{file_name}")
 async def serve_file(file_name: str):
