@@ -225,7 +225,7 @@ const ResultPage = ({ recommendations, summary }) => {
               }}
             >
               <Typography variant="body1" sx={{ flex: 1 }}>
-                {question}
+                {index + 1}. {question}
               </Typography>
               <Button
                 variant="contained"
