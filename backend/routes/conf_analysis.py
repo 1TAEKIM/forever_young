@@ -53,7 +53,7 @@ import os
 
 router = APIRouter()
 
-TFLITE_MODEL_PATH = "/Users/1tae/Desktop/bp/backend/models/model_unquant.tflite"
+TFLITE_MODEL_PATH = "model_unquant.tflite"
 
 # Load TensorFlow Lite model
 try:

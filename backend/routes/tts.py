@@ -89,11 +89,3 @@ async def tts_page(question_index: int):
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
-
-
-@router.get("/static/{file_name}")
-async def serve_file(file_name: str):
-    file_path = f"static/{file_name}"
-    if not os.path.exists(file_path):
-        return JSONResponse(content={"error": "File not found"}, status_code=404)
-    return FileResponse(file_path, media_type="audio/mpeg")
