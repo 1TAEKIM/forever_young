@@ -34,6 +34,7 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("")
 
     setLoading(true); // 로딩 시작
     try {

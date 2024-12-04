@@ -24,7 +24,8 @@ const ResumeUpload = ({ onResult }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setError("")
+  
     if (!file) {
       setError("Please select a file to upload.");
       return;
