@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogContent,
   Box,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 
@@ -18,16 +19,16 @@ const ResultPage = ({ recommendations, summary }) => {
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [openQuestions, setOpenQuestions] = useState(false);
+  const [openLoadingPopup, setOpenLoadingPopup] = useState(false); // 로딩 팝업 상태
   const [selectedJob, setSelectedJob] = useState(null);
-  const [result, setResult] = useState(null);
-  const [connected, setConnected] = useState(false);
+  const [connected, setConnected] = useState(false); // 사용되지 않는 result 제거
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const streamRef = useRef(null);
 
   // 면접 질문 생성 핸들러
   const handleGenerateQuestions = async (jobDescription) => {
-    setLoading(true);
+    setOpenLoadingPopup(true); // 로딩 팝업 열기
     try {
       const response = await axios.post(
         "http://localhost:8000/tts/generate_questions_for_job",
@@ -38,8 +39,10 @@ const ResultPage = ({ recommendations, summary }) => {
       setOpenQuestions(true);
     } catch (error) {
       console.error("Failed to generate questions:", error);
+      alert("질문을 생성하는 데 실패했습니다.");
     } finally {
       setLoading(false);
+      setOpenLoadingPopup(false); // 로딩 팝업 닫기
     }
   };
 
@@ -67,8 +70,6 @@ const ResultPage = ({ recommendations, summary }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play(); // 비디오 재생
-      } else {
-        console.error("videoRef.current가 존재하지 않습니다.");
       }
 
       const ws = new WebSocket("ws://localhost:8000/conf/ws/analyze");
@@ -80,7 +81,7 @@ const ResultPage = ({ recommendations, summary }) => {
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        setResult(data.label); // 서버에서 받은 분석 결과 업데이트
+        console.log("분석 결과:", data.label); // 콘솔에 출력
       };
 
       ws.onclose = () => {
@@ -105,7 +106,6 @@ const ResultPage = ({ recommendations, summary }) => {
       videoRef.current.srcObject = null; // 비디오 요소 초기화
     }
     setConnected(false);
-    setResult(null);
   };
 
   useEffect(() => {
@@ -126,7 +126,7 @@ const ResultPage = ({ recommendations, summary }) => {
     }, 100); // 100ms 간격으로 전송
 
     return () => clearInterval(interval);
-  }, [connected, videoRef]);
+  }, [connected]);
 
   const handleCloseQuestions = () => {
     setOpenQuestions(false);
@@ -195,7 +195,7 @@ const ResultPage = ({ recommendations, summary }) => {
                       fontSize: "14px",
                     }}
                   >
-                    {loading ? "처리 중..." : "면접 질문 생성"}
+                    면접 질문 생성
                   </Button>
                 </Box>
               </ListItem>
@@ -226,7 +226,7 @@ const ResultPage = ({ recommendations, summary }) => {
               }}
             >
               <Typography variant="body1" sx={{ flex: 1 }}>
-                {index + 1}. {question}
+                {question}
               </Typography>
               <Button
                 variant="contained"
@@ -244,51 +244,24 @@ const ResultPage = ({ recommendations, summary }) => {
               </Button>
             </Box>
           ))}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginTop: "16px",
-            }}
-          >
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{
-                width: "100%",
-                maxHeight: "400px",
-                marginBottom: "16px",
-                display: connected ? "block" : "none",
-              }}
-            ></video>
-            {connected ? (
-              <>
-                <Typography variant="h6">
-                  분석 결과: {result || "분석 중..."}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={handleStopAnalysis}
-                  sx={{ marginTop: "16px" }}
-                >
-                  나가기
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleStartAnalysis}
-                sx={{ marginTop: "16px" }}
-              >
-                모의 인터뷰 시작
-              </Button>
-            )}
-          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* 로딩 팝업 */}
+      <Dialog open={openLoadingPopup} fullWidth maxWidth="sm">
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "200px",
+          }}
+        >
+          <CircularProgress />
+          <Typography variant="h6" sx={{ marginTop: "16px" }}>
+            질문을 생성 중입니다. 잠시만 기다려주세요...
+          </Typography>
         </DialogContent>
       </Dialog>
     </Container>
