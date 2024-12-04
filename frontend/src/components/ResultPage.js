@@ -105,7 +105,6 @@ const ResultPage = ({ recommendations, summary }) => {
     if (wsRef.current) {
       wsRef.current.close();
     }
-    setResult(null);
   };
 
   useEffect(() => {
@@ -158,7 +157,7 @@ const ResultPage = ({ recommendations, summary }) => {
               marginBottom: "24px",
               textAlign: "left",
               backgroundColor: "#e0f7fa",
-            }}
+            }}  
           >
             <Typography variant="h6" gutterBottom>
               이력서 요약:
