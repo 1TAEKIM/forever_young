@@ -84,6 +84,14 @@ const ResultPage = ({ recommendations, summary }) => {
       };
 
       ws.onclose = () => {
+        if (streamRef.current) {
+          const tracks = streamRef.current.getTracks();
+          tracks.forEach((track) => track.stop()); // 스트림 트랙 정리
+          streamRef.current = null;
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = null; // 비디오 요소 초기화
+        }
         setConnected(false);
       };
     } catch (error) {
@@ -96,15 +104,6 @@ const ResultPage = ({ recommendations, summary }) => {
     if (wsRef.current) {
       wsRef.current.close();
     }
-    if (streamRef.current) {
-      const tracks = streamRef.current.getTracks();
-      tracks.forEach((track) => track.stop()); // 스트림 트랙 정리
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null; // 비디오 요소 초기화
-    }
-    setConnected(false);
     setResult(null);
   };
 
