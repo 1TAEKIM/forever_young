@@ -23,7 +23,6 @@ app.add_middleware(
 # 라우터 통합
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(resume_router, prefix="/resume", tags=["Resume"])
-# app.include_router(analysis_router, prefix="/analysis", tags=["Analysis"])
 app.include_router(rag_router, prefix="/rag", tags=["RAG"])
 app.include_router(tts_router, prefix="/tts", tags=["TTS"])
 app.include_router(conf_router, prefix="/conf", tags=['CONF'])
