@@ -36,7 +36,16 @@ async def generate_questions_for_job(request: Request):
         if not job_description:
             return JSONResponse(content={"error": "Job description is required."}, status_code=400)
 
-        questions = llm.invoke(prompt.invoke({"job_description": job_description})).content.replace("**", "")
+        provider = os.getenv("LLM_PROVIDER")
+        
+        if provider == 'mlx':
+            bind_kwargs = {"pipeline_kwargs": {"max_tokens": 8192, "temp": 0.7}}
+        elif provider == 'openai':
+            bind_kwargs = {"temperature": 0.7}
+        else:
+            raise RuntimeError("No LLM provider.")
+        
+        questions = llm.bind(**bind_kwargs).invoke(prompt.invoke({"job_description": job_description})).content.replace("**", "")
 
         # 전역 리스트에 저장
         generated_questions = [q.strip() for q in re.findall(r"^(?:-|\d\.) (.*)$", questions, flags=re.MULTILINE)]
