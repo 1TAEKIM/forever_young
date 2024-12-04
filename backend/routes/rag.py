@@ -89,7 +89,7 @@ async def recommend_jobs(request: RecommendationRequest):
             recommendation = {
                 "title": title,
                 "description": description,
-                "url": metadata.get("url")
+                "url": str(metadata.get("url"))
             }
             formatted_recommendations.append(recommendation)
 
