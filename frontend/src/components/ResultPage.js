@@ -12,23 +12,24 @@ import {
   DialogContent,
   Box,
   CircularProgress,
+  Backdrop,
 } from "@mui/material";
 import axios from "axios";
 
 const ResultPage = ({ recommendations, summary }) => {
-  const [loading, setLoading] = useState(false);
+  const [loadingQuestions, setLoadingQuestions] = useState(false); // 면접 질문 생성 로딩 상태
   const [questions, setQuestions] = useState([]);
   const [openQuestions, setOpenQuestions] = useState(false);
-  const [openLoadingPopup, setOpenLoadingPopup] = useState(false); // 로딩 팝업 상태
   const [selectedJob, setSelectedJob] = useState(null);
-  const [connected, setConnected] = useState(false); // 사용되지 않는 result 제거
+  const [result, setResult] = useState(null);
+  const [connected, setConnected] = useState(false);
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const streamRef = useRef(null);
 
   // 면접 질문 생성 핸들러
   const handleGenerateQuestions = async (jobDescription) => {
-    setOpenLoadingPopup(true); // 로딩 팝업 열기
+    setLoadingQuestions(true);
     try {
       const response = await axios.post(
         "http://localhost:8000/tts/generate_questions_for_job",
@@ -39,10 +40,8 @@ const ResultPage = ({ recommendations, summary }) => {
       setOpenQuestions(true);
     } catch (error) {
       console.error("Failed to generate questions:", error);
-      alert("질문을 생성하는 데 실패했습니다.");
     } finally {
-      setLoading(false);
-      setOpenLoadingPopup(false); // 로딩 팝업 닫기
+      setLoadingQuestions(false);
     }
   };
 
@@ -66,10 +65,10 @@ const ResultPage = ({ recommendations, summary }) => {
   const handleStartAnalysis = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      streamRef.current = stream; // 스트림 저장
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play(); // 비디오 재생
+        await videoRef.current.play();
       }
 
       const ws = new WebSocket("ws://localhost:8000/conf/ws/analyze");
@@ -81,7 +80,7 @@ const ResultPage = ({ recommendations, summary }) => {
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log("분석 결과:", data.label); // 콘솔에 출력
+        setResult(data.label);
       };
 
       ws.onclose = () => {
@@ -99,13 +98,14 @@ const ResultPage = ({ recommendations, summary }) => {
     }
     if (streamRef.current) {
       const tracks = streamRef.current.getTracks();
-      tracks.forEach((track) => track.stop()); // 스트림 트랙 정리
+      tracks.forEach((track) => track.stop());
       streamRef.current = null;
     }
     if (videoRef.current) {
-      videoRef.current.srcObject = null; // 비디오 요소 초기화
+      videoRef.current.srcObject = null;
     }
     setConnected(false);
+    setResult(null);
   };
 
   useEffect(() => {
@@ -123,10 +123,10 @@ const ResultPage = ({ recommendations, summary }) => {
         const imageData = canvas.toDataURL("image/jpeg").split(",")[1];
         wsRef.current?.send(imageData);
       }
-    }, 100); // 100ms 간격으로 전송
+    }, 100);
 
     return () => clearInterval(interval);
-  }, [connected]);
+  }, [connected, videoRef]);
 
   const handleCloseQuestions = () => {
     setOpenQuestions(false);
@@ -140,14 +140,35 @@ const ResultPage = ({ recommendations, summary }) => {
       maxWidth="md"
       sx={{
         textAlign: "center",
-        padding: "20px",
-        backgroundColor: "#f9f9f9",
-        borderRadius: "10px",
-        marginTop: "30px",
+        padding: "40px",
+        backgroundColor: "#f7f6f2",
+        borderRadius: "15px",
+        marginTop: "50px",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
       }}
     >
+      {/* 로딩 팝업 */}
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={loadingQuestions}
+      >
+        <CircularProgress color="inherit" />
+        <Typography sx={{ marginLeft: 2 }}>면접 질문 생성 중...</Typography>
+      </Backdrop>
+
       <Paper elevation={3} sx={{ padding: 4 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: "20px",
+          }}
+        >
           추천된 일자리 목록
         </Typography>
         {summary && (
@@ -158,12 +179,20 @@ const ResultPage = ({ recommendations, summary }) => {
               marginBottom: "24px",
               textAlign: "left",
               backgroundColor: "#e0f7fa",
+              borderRadius: "10px",
             }}
           >
             <Typography variant="h6" gutterBottom>
               이력서 요약:
             </Typography>
-            <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+            <Typography
+              variant="body1"
+              sx={{
+                whiteSpace: "pre-wrap",
+                fontSize: "16px",
+                color: "#666",
+              }}
+            >
               {summary}
             </Typography>
           </Paper>
@@ -177,22 +206,37 @@ const ResultPage = ({ recommendations, summary }) => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  gap: "16px",
+                  marginBottom: "16px",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "10px",
+                  boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.1)",
+                  padding: "16px",
                 }}
               >
                 <Box sx={{ flex: 1 }}>
-                  <ListItemText primary={job.title} secondary={job.description} />
+                  <ListItemText
+                    primary={job.title}
+                    secondary={job.description}
+                    primaryTypographyProps={{
+                      fontWeight: "bold",
+                      fontSize: "18px",
+                    }}
+                    secondaryTypographyProps={{
+                      fontSize: "14px",
+                      color: "#666",
+                    }}
+                  />
                 </Box>
                 <Box sx={{ flexShrink: 0 }}>
                   <Button
                     variant="contained"
-                    color="primary"
                     onClick={() => handleGenerateQuestions(`채용제목: ${job.title}\n${job.description}`)}
-                    disabled={loading}
+                    disabled={loadingQuestions}
                     sx={{
-                      width: "140px",
-                      height: "40px",
+                      fontWeight: "bold",
                       fontSize: "14px",
+                      backgroundColor: "#4CAF50",
+                      "&:hover": { backgroundColor: "#45A049" },
                     }}
                   >
                     면접 질문 생성
@@ -210,9 +254,20 @@ const ResultPage = ({ recommendations, summary }) => {
 
       {/* 면접 질문 팝업 */}
       <Dialog open={openQuestions} onClose={handleCloseQuestions} fullWidth maxWidth="md">
-        <DialogTitle>면접 질문</DialogTitle>
+        <DialogTitle sx={{ fontWeight: "bold", fontSize: "20px", textAlign: "center" }}>
+          면접 질문
+        </DialogTitle>
         <DialogContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{
+              fontWeight: "bold",
+              marginBottom: "20px",
+              color: "#333",
+              textAlign: "center",
+            }}
+          >
             {selectedJob}
           </Typography>
           {questions.map((question, index) => (
@@ -223,9 +278,13 @@ const ResultPage = ({ recommendations, summary }) => {
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: "16px",
+                padding: "10px",
+                backgroundColor: "#f9f9f9",
+                borderRadius: "10px",
+                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
               }}
             >
-              <Typography variant="body1" sx={{ flex: 1 }}>
+              <Typography variant="body1" sx={{ flex: 1, fontSize: "16px", color: "#555" }}>
                 {question}
               </Typography>
               <Button
@@ -235,33 +294,82 @@ const ResultPage = ({ recommendations, summary }) => {
                 sx={{
                   flexShrink: 0,
                   marginLeft: "16px",
-                  width: "140px",
-                  height: "40px",
                   fontSize: "14px",
+                  backgroundColor: "#FF6F61",
+                  "&:hover": { backgroundColor: "#E64A45" },
                 }}
               >
                 음성으로 듣기
               </Button>
             </Box>
           ))}
-        </DialogContent>
-      </Dialog>
 
-      {/* 로딩 팝업 */}
-      <Dialog open={openLoadingPopup} fullWidth maxWidth="sm">
-        <DialogContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "200px",
-          }}
-        >
-          <CircularProgress />
-          <Typography variant="h6" sx={{ marginTop: "16px" }}>
-            질문을 생성 중입니다. 잠시만 기다려주세요...
-          </Typography>
+          {/* 실시간 분석 UI */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: "16px",
+              padding: "20px",
+              backgroundColor: "#f7f7f7",
+              borderRadius: "10px",
+              boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{
+                width: "100%",
+                maxHeight: "400px",
+                marginBottom: "16px",
+                display: connected ? "block" : "none",
+                borderRadius: "10px",
+                border: "1px solid #ddd",
+              }}
+            ></video>
+            {connected ? (
+              <>
+                <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+                  분석 결과: {result || "분석 중..."}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleStopAnalysis}
+                  sx={{
+                    marginTop: "16px",
+                    fontWeight: "bold",
+                    borderColor: "#FF6F61",
+                    color: "#FF6F61",
+                    "&:hover": {
+                      backgroundColor: "#FF6F61",
+                      color: "#FFF",
+                    },
+                  }}
+                >
+                  나가기
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleStartAnalysis}
+                sx={{
+                  marginTop: "16px",
+                  fontWeight: "bold",
+                  backgroundColor: "#4CAF50",
+                  "&:hover": { backgroundColor: "#45A049" },
+                }}
+              >
+                모의 인터뷰 시작
+              </Button>
+            )}
+          </Box>
         </DialogContent>
       </Dialog>
     </Container>

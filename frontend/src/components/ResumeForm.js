@@ -71,7 +71,18 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ padding: 4, maxWidth: 600, margin: "auto" }}>
+    <Paper
+      elevation={3}
+      sx={{
+        padding: 4,
+        maxWidth: 800,
+        margin: "auto",
+        backgroundColor: "#f7f6f2",
+        borderRadius: "15px",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+      }}
+    >
+      {/* 로딩 화면 */}
       <Backdrop
         sx={{
           color: "#fff",
@@ -82,11 +93,23 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
         <CircularProgress color="inherit" />
         <Typography sx={{ marginLeft: 2 }}>처리 중입니다. 잠시만 기다려주세요...</Typography>
       </Backdrop>
-      <Typography variant="h4" gutterBottom>
+
+      {/* 제목 */}
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          fontWeight: "bold",
+          color: "#333",
+          textAlign: "center",
+          marginBottom: "20px",
+        }}
+      >
         이력서 작성
       </Typography>
+
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           <Grid item xs={12}>
             <TextField
               label="나이"
@@ -95,6 +118,8 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               fullWidth
               onChange={handleChange}
               value={formData.age}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -104,6 +129,8 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               fullWidth
               onChange={handleChange}
               value={formData.contact}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -115,6 +142,8 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               rows={3}
               onChange={handleChange}
               value={formData.experience}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -126,6 +155,8 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               rows={3}
               onChange={handleChange}
               value={formData.education}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -137,6 +168,8 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               rows={3}
               onChange={handleChange}
               value={formData.certifications}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -148,6 +181,8 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               rows={3}
               onChange={handleChange}
               value={formData.skills}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={6}>
@@ -157,6 +192,8 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               fullWidth
               onChange={handleChange}
               value={formData.desired_position}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={6}>
@@ -166,17 +203,31 @@ const ResumeForm = ({ isLoggedIn, onResult }) => {
               fullWidth
               onChange={handleChange}
               value={formData.desired_location}
+              InputLabelProps={{ style: { fontSize: "18px" } }}
+              inputProps={{ style: { fontSize: "16px" } }}
             />
           </Grid>
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary" fullWidth>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{
+                fontWeight: "bold",
+                fontSize: "18px",
+                backgroundColor: "#4CAF50",
+                "&:hover": { backgroundColor: "#45A049" },
+              }}
+            >
               이력서 제출
             </Button>
           </Grid>
         </Grid>
       </Box>
+
+      {/* 에러 메시지 */}
       {error && (
-        <Typography color="error" variant="body1" sx={{ marginTop: 2 }}>
+        <Typography color="error" variant="body1" sx={{ marginTop: 2, textAlign: "center" }}>
           {error}
         </Typography>
       )}
