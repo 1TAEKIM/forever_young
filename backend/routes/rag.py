@@ -8,7 +8,7 @@ import os
 router = APIRouter()
 
 # **파일 경로 설정**
-faiss_index_directory = "faiss_index"
+faiss_index_directory = "/Users/1tae/Desktop/bp/backend/faiss_index"
 faiss_index_path = os.path.join(faiss_index_directory, "index.faiss")
 metadata_path = os.path.join(faiss_index_directory, "index.pkl")
 
