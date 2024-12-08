@@ -17,11 +17,11 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
       maxWidth="md"
       sx={{
         textAlign: "center",
-        padding: "40px",
+        padding: "50px",
         backgroundColor: "#f7f6f2",
-        borderRadius: "15px",
+        borderRadius: "20px",
         marginTop: "50px",
-        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+        boxShadow: "0px 6px 15px rgba(0, 0, 0, 0.2)",
       }}
     >
       {/* Header */}
@@ -30,7 +30,7 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "40px",
+          marginBottom: "50px",
         }}
       >
         {isLoggedIn ? (
@@ -39,9 +39,9 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
             size="large"
             onClick={handleLogout}
             sx={{
-              fontSize: "18px",
+              fontSize: "22px", // 글씨 크기 확대
               fontWeight: "bold",
-              padding: "10px 20px",
+              padding: "15px 30px",
               backgroundColor: "#FF6F61",
               color: "#FFF",
               "&:hover": {
@@ -52,15 +52,15 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
             로그아웃
           </Button>
         ) : (
-          <Box sx={{ display: "flex", gap: "10px" }}>
+          <Box sx={{ display: "flex", gap: "20px" }}>
             <Button
               variant="contained"
               size="large"
               onClick={() => navigate("/login")}
               sx={{
-                fontSize: "18px",
+                fontSize: "18px", // 글씨 크기 확대
                 fontWeight: "bold",
-                padding: "10px 20px",
+                padding: "10px 25px",
                 backgroundColor: "#4CAF50",
                 color: "#FFF",
                 "&:hover": {
@@ -76,9 +76,9 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
               size="large"
               onClick={() => navigate("/register")}
               sx={{
-                fontSize: "18px",
+                fontSize: "18px", // 글씨 크기 확대
                 fontWeight: "bold",
-                padding: "10px 20px",
+                padding: "10px 25px",
                 backgroundColor: "#2196F3",
                 color: "#FFF",
                 "&:hover": {
@@ -98,8 +98,9 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
         sx={{
           fontWeight: "bold",
           color: "#333",
+          fontSize: "3rem", // 글씨 크기 확대
           marginBottom: "20px",
-          textShadow: "1px 1px 4px rgba(0, 0, 0, 0.3)",
+          textShadow: "1px 1px 5px rgba(0, 0, 0, 0.3)",
         }}
       >
         👵👴 노인을 위한 일자리 플랫폼
@@ -107,9 +108,10 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
       <Typography
         variant="body1"
         sx={{
-          fontSize: "18px",
+          fontSize: "22px", // 글씨 크기 확대
+          fontWeight: "500",
           color: "#666",
-          marginBottom: "40px",
+          marginBottom: "50px",
         }}
       >
         간편하게 이력서를 업로드하거나 작성하고, 맞춤형 일자리를 찾아보세요!
@@ -121,12 +123,12 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
           <Paper
             elevation={3}
             sx={{
-              padding: "20px",
-              borderRadius: "10px",
+              padding: "30px", // 버튼 컨테이너 크기 확대
+              borderRadius: "15px",
               backgroundColor: "#F3F7FA",
               textAlign: "center",
               "&:hover": {
-                boxShadow: "0px 6px 15px rgba(0, 0, 0, 0.3)",
+                boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.3)",
               },
             }}
           >
@@ -135,7 +137,7 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
               color="primary"
               fullWidth
               sx={{
-                fontSize: "18px",
+                fontSize: "30px", // 글씨 크기 확대
                 padding: "15px",
                 fontWeight: "bold",
                 backgroundColor: "#4CAF50",
@@ -154,12 +156,12 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
           <Paper
             elevation={3}
             sx={{
-              padding: "20px",
-              borderRadius: "10px",
+              padding: "30px", // 버튼 컨테이너 크기 확대
+              borderRadius: "15px",
               backgroundColor: "#F3F7FA",
               textAlign: "center",
               "&:hover": {
-                boxShadow: "0px 6px 15px rgba(0, 0, 0, 0.3)",
+                boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.3)",
               },
             }}
           >
@@ -168,7 +170,7 @@ const Main = ({ isLoggedIn, setIsLoggedIn }) => {
               color="secondary"
               fullWidth
               sx={{
-                fontSize: "18px",
+                fontSize: "30px", // 글씨 크기 확대
                 padding: "15px",
                 fontWeight: "bold",
                 backgroundColor: "#2196F3",
