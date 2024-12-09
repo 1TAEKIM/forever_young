@@ -13,6 +13,7 @@ import {
   Box,
   CircularProgress,
   Backdrop,
+  Grid,
 } from "@mui/material";
 import axios from "axios";
 
@@ -26,6 +27,13 @@ const ResultPage = ({ recommendations, summary }) => {
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const streamRef = useRef(null);
+
+  const additionalJobs = [
+    { title: "프로젝트 매니저", description: "근무지: 서울 강남구, 연봉: 협의 후 결정" },
+    { title: "병원 관리원", description: "근무지: 경기 성남시, 연봉: 3,300만 원" },
+    { title: "웹 개발", description: "근무지: 대전 유성구, 연봉: 4,800만 원" },
+    { title: "기술자문위원", description: "근무지: 부산 해운대구, 연봉: 6,200만 원" },
+  ];
 
   // 면접 질문 생성 핸들러
   const handleGenerateQuestions = async (jobDescription) => {
@@ -159,6 +167,7 @@ const ResultPage = ({ recommendations, summary }) => {
         <Typography sx={{ marginLeft: 2 }}>면접 질문 생성 중...</Typography>
       </Backdrop>
 
+      {/* 추천 일자리 */}
       <Paper elevation={3} sx={{ padding: 4 }}>
         <Typography
           variant="h4"
@@ -189,7 +198,7 @@ const ResultPage = ({ recommendations, summary }) => {
               variant="body1"
               sx={{
                 whiteSpace: "pre-wrap",
-                fontSize: "16px",
+                fontSize: "18px",
                 color: "#666",
               }}
             >
@@ -219,7 +228,7 @@ const ResultPage = ({ recommendations, summary }) => {
                     secondary={job.description}
                     primaryTypographyProps={{
                       fontWeight: "bold",
-                      fontSize: "18px",
+                      fontSize: "20px",
                     }}
                     secondaryTypographyProps={{
                       fontSize: "14px",
@@ -227,21 +236,19 @@ const ResultPage = ({ recommendations, summary }) => {
                     }}
                   />
                 </Box>
-                <Box sx={{ flexShrink: 0 }}>
-                  <Button
-                    variant="contained"
-                    onClick={() => handleGenerateQuestions(`채용제목: ${job.title}\n${job.description}`)}
-                    disabled={loadingQuestions}
-                    sx={{
-                      fontWeight: "bold",
-                      fontSize: "14px",
-                      backgroundColor: "#4CAF50",
-                      "&:hover": { backgroundColor: "#45A049" },
-                    }}
-                  >
-                    면접 질문 생성
-                  </Button>
-                </Box>
+                <Button
+                  variant="contained"
+                  onClick={() => handleGenerateQuestions(`채용제목: ${job.title}\n${job.description}`)}
+                  disabled={loadingQuestions}
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    backgroundColor: "#4CAF50",
+                    "&:hover": { backgroundColor: "#45A049" },
+                  }}
+                >
+                  면접 질문 생성
+                </Button>
               </ListItem>
             ))}
           </List>
@@ -250,6 +257,51 @@ const ResultPage = ({ recommendations, summary }) => {
             추천 결과가 없습니다.
           </Typography>
         )}
+      </Paper>
+
+      {/* 추가 일자리 정보 */}
+      <Paper elevation={3} sx={{ padding: 4, marginTop: "30px" }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: "20px",
+          }}
+        >
+          다른 일자리 정보
+        </Typography>
+        <Grid container spacing={3}>
+          {additionalJobs.map((job, index) => (
+            <Grid item xs={12} sm={6} key={index}>
+              <Paper
+                elevation={2}
+                sx={{
+                  padding: "16px",
+                  borderRadius: "10px",
+                  textAlign: "left",
+                  backgroundColor: "#f9f9f9",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {job.title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#555" }}>
+                  {job.description}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
       </Paper>
 
       {/* 면접 질문 팝업 */}
@@ -284,7 +336,7 @@ const ResultPage = ({ recommendations, summary }) => {
                 boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
               }}
             >
-              <Typography variant="body1" sx={{ flex: 1, fontSize: "16px", color: "#555" }}>
+              <Typography variant="body1" sx={{ flex: 1, fontSize: "20px", color: "#555" }}>
                 {question}
               </Typography>
               <Button
@@ -294,7 +346,7 @@ const ResultPage = ({ recommendations, summary }) => {
                 sx={{
                   flexShrink: 0,
                   marginLeft: "16px",
-                  fontSize: "14px",
+                  fontSize: "16px",
                   backgroundColor: "#FF6F61",
                   "&:hover": { backgroundColor: "#E64A45" },
                 }}
@@ -304,8 +356,8 @@ const ResultPage = ({ recommendations, summary }) => {
             </Box>
           ))}
 
-          {/* 실시간 분석 UI */}
-          <Box
+{/* 실시간 분석 UI */}
+<Box
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -370,6 +422,9 @@ const ResultPage = ({ recommendations, summary }) => {
               </Button>
             )}
           </Box>
+
+
+
         </DialogContent>
       </Dialog>
     </Container>
